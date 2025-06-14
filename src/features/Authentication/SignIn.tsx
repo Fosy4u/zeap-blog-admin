@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
-import Logo from '../../images/logo/app_logo.png';
-import { AuthContext } from '../../contexts/authContext';
-import { useNavigate } from 'react-router-dom';
-import Banner from '../../lib/Banner';
+import React, { useContext, useEffect, useState } from "react";
+import Logo from "../../images/logo/app_logo.png";
+import { AuthContext } from "../../contexts/authContext";
+import { useNavigate } from "react-router-dom";
+import Banner from "../../lib/Banner";
 
 const SignIn: React.FC = () => {
   const {
@@ -15,17 +15,17 @@ const SignIn: React.FC = () => {
     setLoading,
   } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [email, setEmail] = useState<string>('');
+  const [email, setEmail] = useState<string>("");
 
-  const [password, setPassword] = useState<string>('');
+  const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
-  const [errorTitle, setErrorTitle] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [errorTitle, setErrorTitle] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const email = localStorage.getItem('zeapEmail');
-    const password = localStorage.getItem('zeapPassword');
+    const email = localStorage.getItem("zeapEmail");
+    const password = localStorage.getItem("zeapPassword");
     if (email && password) {
       setEmail(email);
       setPassword(password);
@@ -38,19 +38,19 @@ const SignIn: React.FC = () => {
         const admin = user?.isAdmin || user?.superAdmin;
 
         if (admin) {
-          return navigate('/');
+          return navigate("/");
         } else {
           logout();
-          setErrorTitle('Unauthorized');
+          setErrorTitle("Unauthorized");
           setError(
-            'You are not authorized to access this application. Please contact the administrator',
+            "You are not authorized to access this application. Please contact the administrator"
           );
           return setLoading(false);
         }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isAuthenticated, user],
+    [isAuthenticated, user]
   );
 
   const handleLogin = () => {
@@ -72,7 +72,7 @@ const SignIn: React.FC = () => {
           </span>
 
           <h2 className="mb-9 text-2xl font-bold text-darkGold dark:text-white sm:text-title-xl2">
-            Sign In to Zeap Admin
+            Sign In to Zeap Blog Admin
           </h2>
           {error && (
             <Banner
@@ -130,7 +130,7 @@ const SignIn: React.FC = () => {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   onChange={(e) => setPassword(e.currentTarget.value)}
                   value={password}
