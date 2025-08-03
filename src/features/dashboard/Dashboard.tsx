@@ -13,6 +13,7 @@ import { Badge } from "flowbite-react";
 import { NavLink } from "react-router-dom";
 import { truncateText } from "../../utils/helpers";
 import { capitalize } from "lodash";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const token = useSelector(globalSelectors.selectAuthToken);
@@ -52,6 +53,18 @@ const Dashboard = () => {
     return data;
   };
 
+  useEffect(() => {
+    console.log("useEffect called", window);
+    const handleScroll = () => {
+      // You can add any scroll-related logic here if needed
+      console.log("Scroll event detected");
+    };
+    window.addEventListener("scroll", handleScroll);
+    // Cleanup function to remove the event listener
+    // return () => {
+    //   window.removeEventListener("scroll", handleScroll);
+    // };
+  }, []);
   return (
     <div>
       {isLoading && (

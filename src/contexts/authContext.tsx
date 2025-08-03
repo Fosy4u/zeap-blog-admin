@@ -1,17 +1,18 @@
-import { UserInterface } from '../interface/interface';
-import { firebase } from '../features/Authentication/firebase';
+import { UserInterface } from "../interface/interface";
+import { firebase } from "../features/Authentication/firebase";
 import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { createContext } from 'react';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { globalActions, globalSelectors } from '../redux/services/global.slice';
-import zeapApiSlice from '../redux/services/zeapApi.slice';
-import Loading from '../lib/Loading';
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { createContext } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { globalActions, globalSelectors } from "../redux/services/global.slice";
+import zeapApiSlice from "../redux/services/zeapApi.slice";
+import Loading from "../lib/Loading";
 
 export const AuthContext = createContext<{
   isAuthenticated: boolean;
@@ -24,6 +25,7 @@ export const AuthContext = createContext<{
   setUser: React.Dispatch<
     React.SetStateAction<UserInterface | null | undefined>
   >;
+  resetPassword: (email: string) => void;
 }>({
   isAuthenticated: false,
   login: () => {},
@@ -33,6 +35,7 @@ export const AuthContext = createContext<{
   loading: false,
   setLoading: () => {},
   setUser: () => {},
+  resetPassword: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -53,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     {
       uid: userUid as string,
     },
-    { skip: !userUid || !token },
+    { skip: !userUid || !token }
   );
   const userData = isAuthenticated ? getAuthUserQuery?.data?.data : null;
 
@@ -96,18 +99,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null);
         dispatch(globalActions.setAuthToken(null));
         const noNavLinks = [
-          '/signIn',
-          '/SignIn',
-          '/404',
-          '/404/',
-          '/receiptDownload',
-          'signIn',
-          'SignIn',
-          '404',
-          'receiptDownload',
+          "/signIn",
+          "/SignIn",
+          "/404",
+          "/404/",
+          "/receiptDownload",
+          "signIn",
+          "SignIn",
+          "404",
+          "receiptDownload",
         ];
-        if (!noNavLinks.includes(location.slice(1)?.split('/')[0])) {
-          navigate('/SignIn');
+        if (!noNavLinks.includes(location.slice(1)?.split("/")[0])) {
+          navigate("/SignIn");
         }
       }
     });
@@ -117,9 +120,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (userData && userUid) {
       if (!userData?.isBlogAuthor) {
-        setLoginError('You are not authorized to access this page');
+        setLoginError("You are not authorized to access this page");
         setLoading(false);
-        return navigate('/SignIn');
+        return navigate("/SignIn");
       }
       setUser(userData as UserInterface);
       setLoading(false);
@@ -130,12 +133,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [userData, userUid]);
 
   useEffect(() => {
-    const currentUrl = localStorage.getItem('currentUrl');
+    const currentUrl = localStorage.getItem("currentUrl");
     const admin = user?.isAdmin || user?.superAdmin;
     if (isAuthenticated && admin) {
       getToken();
       if (currentUrl) {
-        localStorage.removeItem('currentUrl');
+        localStorage.removeItem("currentUrl");
         return navigate(currentUrl);
       }
       // return navigate(
@@ -162,24 +165,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // ...
         })
         .catch((e) => {
-          console.log('error', e.code);
+          console.log("error", e.code);
           if (
-            e.code === 'auth/user-not-found' ||
-            e.code === 'auth/invalid-email' ||
-            e.code === 'auth/wrong-password' ||
-            e.code === 'auth/invalid-credential'
+            e.code === "auth/user-not-found" ||
+            e.code === "auth/invalid-email" ||
+            e.code === "auth/wrong-password" ||
+            e.code === "auth/invalid-credential"
           ) {
-            setLoginError(' Invalid email or password');
+            setLoginError(" Invalid email or password");
           }
-          if (e.code === 'auth/too-many-requests') {
-            setLoginError('Too many requests, please try again later');
+          if (e.code === "auth/too-many-requests") {
+            setLoginError("Too many requests, please try again later");
           }
 
-          if (e.code === 'auth/user-disabled') {
-            setLoginError('User account is disabled');
+          if (e.code === "auth/user-disabled") {
+            setLoginError("User account is disabled");
           }
-          if (e.code === 'auth/network-request-failed') {
-            setLoginError('loginloginError in Network connection');
+          if (e.code === "auth/network-request-failed") {
+            setLoginError("loginloginError in Network connection");
           }
           setLoading(false);
           // ..
@@ -188,7 +191,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       //  setShowSpinner(false);
     } catch (err) {
       console.log(err);
-      setLoginError('loginloginError in Network connection');
+      setLoginError("loginloginError in Network connection");
       setLoading(false);
     }
   };
@@ -199,6 +202,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     dispatch(globalActions.setAuthToken(null));
+  };
+  const resetPassword = async (email: string) => {
+    setLoading(true);
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        setLoginError("Password reset email sent successfully");
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error sending password reset email:", error);
+        if (error.code === "auth/user-not-found") {
+          setLoginError("No user found with this email address");
+        } else if (error.code === "auth/invalid-email") {
+          setLoginError("Invalid email address");
+        } else {
+          setLoginError("Error sending password reset email");
+        }
+        setLoading(false);
+      });
   };
 
   return (
@@ -212,6 +234,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading,
         setUser,
         setLoading,
+        resetPassword,
       }}
     >
       {loading && <Loading />}

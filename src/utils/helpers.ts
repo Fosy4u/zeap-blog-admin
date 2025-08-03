@@ -146,3 +146,25 @@ export const truncateText = (text: string, maxLength: number) => {
   }
   return text.slice(0, maxLength) + "...";
 };
+
+export const correctULTagFromQuill = (str: string) => {
+  if (str) {
+    let re = /(<ol><li data-list="bullet">)(.*?)(<\/ol>)/;
+    let strArr = str.split(re);
+
+    while (
+      strArr.findIndex((ele) => ele === '<ol><li data-list="bullet">') !== -1
+    ) {
+      let indx = strArr.findIndex(
+        (ele) => ele === '<ol><li data-list="bullet">',
+      );
+      if (indx) {
+        strArr[indx] = '<ul><li data-list="bullet">';
+        let endTagIndex = strArr.findIndex((ele) => ele === '</ol>');
+        strArr[endTagIndex] = '</ul>';
+      }
+    }
+    return strArr.join('');
+  }
+  return str;
+};

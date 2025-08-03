@@ -3,7 +3,7 @@ import {
   BlogPostInterface,
 } from "../../../interface/interface";
 import NoPic from "../../../images/icon/noPhoto.png";
-import { checkIfHtml } from "../../../utils/helpers";
+import { checkIfHtml, correctULTagFromQuill } from "../../../utils/helpers";
 import { useEffect, useRef } from "react";
 
 import SectionBlogHero from "./SectionBlogHero";
@@ -27,7 +27,7 @@ const PostDetail = ({ post }: { post: BlogPostInterface }) => {
   useEffect(() => {
     if (descriptionHtmlRef.current) {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(post.content, "text/html");
+      const doc = parser.parseFromString(correctULTagFromQuill(post.content), "text/html");
       descriptionHtmlRef.current.innerHTML = doc.body.innerHTML;
     }
   }, [post.content]);
